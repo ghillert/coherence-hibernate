@@ -102,16 +102,16 @@
 
         <!-- dependency versions (alphabetically) -->
         <!--<coherence.version>[3.4.2,)</coherence.version>-->
-        <coherence.version>12.2.1-1-0</coherence.version>
+        <coherence.version>20.06.1</coherence.version>
         <!--<hibernate.version>[3.3.1.GA,)</hibernate.version>-->
-        <hibernate.version>4.2.4.Final</hibernate.version>
+        <hibernate.version>4.3.11.Final</hibernate.version>
         <junit.version>4.11</junit.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.oracle.coherence</groupId>
+                <groupId>com.oracle.coherence.ce</groupId>
                 <artifactId>coherence</artifactId>
                 <version>${coherence.version}</version>
             </dependency>
