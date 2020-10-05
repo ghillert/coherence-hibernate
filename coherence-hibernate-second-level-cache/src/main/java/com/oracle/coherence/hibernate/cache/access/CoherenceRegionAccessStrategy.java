@@ -35,7 +35,7 @@ import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.RegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -165,7 +165,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public Object get(SessionImplementor session, Object key, long txTimestamp) throws CacheException
+    public Object get(SharedSessionContractImplementor session, Object key, long txTimestamp) throws CacheException
     {
         debugf("%s.getValue(%s, %s)", this, key, txTimestamp);
         CoherenceRegion.Value cacheValue = getCoherenceRegion().getValue(key);
@@ -176,7 +176,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version)
+    public boolean putFromLoad(SharedSessionContractImplementor session, Object key, Object value, long txTimestamp, Object version)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s)", this, key, value, txTimestamp, version);
@@ -187,7 +187,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
+    public boolean putFromLoad(SharedSessionContractImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s, %s)", this, key, value, txTimestamp, version, minimalPutOverride);
@@ -200,7 +200,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public SoftLock lockItem(SessionImplementor session, Object key, Object version) throws CacheException
+    public SoftLock lockItem(SharedSessionContractImplementor session, Object key, Object version) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, version);
         //for the majority of access strategies lockItem is a no-op
@@ -222,7 +222,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public void unlockItem(SessionImplementor session, Object key, SoftLock lock) throws CacheException
+    public void unlockItem(SharedSessionContractImplementor session, Object key, SoftLock lock) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, lock);
         //for the majority of access strategies unlockItem is a no-op
@@ -242,7 +242,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public void remove(SessionImplementor session, Object key) throws CacheException
+    public void remove(SharedSessionContractImplementor session, Object key) throws CacheException
     {
         debugf("%s.remove(%s)", this, key);
         evict(key);

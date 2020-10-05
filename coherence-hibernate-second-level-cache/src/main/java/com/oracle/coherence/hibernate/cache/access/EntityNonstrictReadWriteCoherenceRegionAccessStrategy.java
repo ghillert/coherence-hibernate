@@ -34,7 +34,7 @@ import org.hibernate.cache.spi.EntityRegion;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
@@ -79,7 +79,7 @@ implements EntityRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean insert(SessionImplementor session, Object key, Object value, Object version) throws CacheException
+    public boolean insert(SharedSessionContractImplementor session, Object key, Object value, Object version) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/EntityRegionAccessStrategy.html,
         //Hibernate will make the call sequence insert() -> afterInsert() when inserting an entity.
@@ -93,7 +93,7 @@ implements EntityRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean afterInsert(SessionImplementor session, Object key, Object value, Object version) throws CacheException
+    public boolean afterInsert(SharedSessionContractImplementor session, Object key, Object value, Object version) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/EntityRegionAccessStrategy.html,
         //Hibernate will make the call sequence insert() -> afterInsert() when inserting an entity.
@@ -108,7 +108,7 @@ implements EntityRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean update(SessionImplementor session, Object key, Object value, Object currentVersion, Object previousVersion) throws CacheException
+    public boolean update(SharedSessionContractImplementor session, Object key, Object value, Object currentVersion, Object previousVersion) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/EntityRegionAccessStrategy.html,
         //Hibernate will make the call sequence lockItem() -> update() -> afterUpdate() when updating an entity.
@@ -124,7 +124,7 @@ implements EntityRegionAccessStrategy
      * <p>Implementation notes
      */
     @Override
-    public boolean afterUpdate(SessionImplementor session, Object key, Object value, Object currentVersion, Object previousVersion, SoftLock lock) throws CacheException
+    public boolean afterUpdate(SharedSessionContractImplementor session, Object key, Object value, Object currentVersion, Object previousVersion, SoftLock lock) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/EntityRegionAccessStrategy.html,
         //Hibernate will make the call sequence lockItem() -> update() -> afterUpdate() when updating an entity.

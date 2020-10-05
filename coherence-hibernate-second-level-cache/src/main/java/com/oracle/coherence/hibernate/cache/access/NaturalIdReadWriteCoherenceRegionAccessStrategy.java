@@ -33,7 +33,7 @@ import org.hibernate.cache.internal.DefaultCacheKeysFactory;
 import org.hibernate.cache.spi.NaturalIdRegion;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
@@ -79,7 +79,7 @@ implements NaturalIdRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean insert(SessionImplementor session, Object key, Object value) throws CacheException
+    public boolean insert(SharedSessionContractImplementor session, Object key, Object value) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/NaturalIdRegionAccessStrategy.html
         //Hibernate will make the call sequence insert() -> afterInsert() when inserting a natural ID.
@@ -93,7 +93,7 @@ implements NaturalIdRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean afterInsert(SessionImplementor session, Object key, Object value) throws CacheException
+    public boolean afterInsert(SharedSessionContractImplementor session, Object key, Object value) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/NaturalIdRegionAccessStrategy.html
         //Hibernate will make the call sequence insert() -> afterInsert() when inserting a natural ID.
@@ -107,7 +107,7 @@ implements NaturalIdRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean update(SessionImplementor session, Object key, Object value) throws CacheException
+    public boolean update(SharedSessionContractImplementor session, Object key, Object value) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/NaturalIdRegionAccessStrategy.html
         //Hibernate will make the call sequence lockItem() -> remove() -> update() -> afterUpdate() when updating a natural ID.
@@ -121,7 +121,7 @@ implements NaturalIdRegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean afterUpdate(SessionImplementor session, Object key, Object value, SoftLock lock) throws CacheException
+    public boolean afterUpdate(SharedSessionContractImplementor session, Object key, Object value, SoftLock lock) throws CacheException
     {
         //per http://docs.jboss.org/hibernate/orm/4.1/javadocs/org/hibernate/cache/spi/access/NaturalIdRegionAccessStrategy.html
         //Hibernate will make the call sequence lockItem() -> remove() -> update() -> afterUpdate() when updating a natural ID.
@@ -133,7 +133,7 @@ implements NaturalIdRegionAccessStrategy
     }
 
     @Override
-    public Object generateCacheKey(Object[] naturalIdValues, EntityPersister persister, SessionImplementor session)
+    public Object generateCacheKey(Object[] naturalIdValues, EntityPersister persister, SharedSessionContractImplementor session)
     {
         return DefaultCacheKeysFactory.staticCreateNaturalIdKey(naturalIdValues, persister, session);
     }

@@ -33,7 +33,7 @@ import com.tangosol.util.processor.AbstractProcessor;
 import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.SoftLock;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -70,7 +70,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public Object get(SessionImplementor session, Object key, long txTimestamp) throws CacheException
+    public Object get(SharedSessionContractImplementor session, Object key, long txTimestamp) throws CacheException
     {
         debugf("%s.get(%s, %s)", this, key, txTimestamp);
         return getCoherenceRegion().invoke(key, new GetProcessor());
@@ -80,7 +80,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public org.hibernate.cache.spi.access.SoftLock lockItem(SessionImplementor session, Object key, Object version) throws CacheException
+    public org.hibernate.cache.spi.access.SoftLock lockItem(SharedSessionContractImplementor session, Object key, Object version) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, version);
         CoherenceRegion.Value valueIfAbsent = newCacheValue(null, version);
@@ -94,7 +94,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
+    public boolean putFromLoad(SharedSessionContractImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s, %s)", this, key, value, txTimestamp, version, minimalPutOverride);
@@ -108,7 +108,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public void unlockItem(SessionImplementor session, Object key, org.hibernate.cache.spi.access.SoftLock lock) throws CacheException
+    public void unlockItem(SharedSessionContractImplementor session, Object key, org.hibernate.cache.spi.access.SoftLock lock) throws CacheException
     {
         debugf("%s.unlockItem(%s, %s)", this, key, lock);
         SoftUnlockItemProcessor processor = new SoftUnlockItemProcessor(lock, getCoherenceRegion().nextTimestamp());
