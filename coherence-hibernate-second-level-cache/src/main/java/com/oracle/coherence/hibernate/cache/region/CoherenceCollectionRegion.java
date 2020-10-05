@@ -30,12 +30,13 @@ import com.oracle.coherence.hibernate.cache.access.CollectionReadWriteCoherenceR
 import com.oracle.coherence.hibernate.cache.access.CollectionNonstrictReadWriteCoherenceRegionAccessStrategy;
 import com.oracle.coherence.hibernate.cache.access.CollectionReadOnlyCoherenceRegionAccessStrategy;
 import com.tangosol.net.NamedCache;
+
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.CacheDataDescription;
 import org.hibernate.cache.spi.CollectionRegion;
 import org.hibernate.cache.spi.access.AccessType;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
-import org.hibernate.cfg.Settings;
 
 import java.util.Properties;
 
@@ -43,6 +44,7 @@ import java.util.Properties;
  * A CoherenceCollectionRegion is a CoherenceTransactionalDataRegion intended to cache Hibernate collections (i.e. relationships).
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public class CoherenceCollectionRegion
 extends CoherenceTransactionalDataRegion
@@ -56,13 +58,13 @@ implements CollectionRegion
      * Complete constructor.
      *
      * @param namedCache the NamedCache implementing this CoherenceCollectionRegion
-     * @param settings the Hibernate settings object
+     * @param sessionFactoryOptions the Hibernate SessionFactoryOptions
      * @param properties configuration properties for this CoherenceCollectionRegion
      * @param metadata the description of the data in this CoherenceCollectionRegion
      */
-    public CoherenceCollectionRegion(NamedCache namedCache, Settings settings, Properties properties, CacheDataDescription metadata)
+    public CoherenceCollectionRegion(NamedCache namedCache, SessionFactoryOptions sessionFactoryOptions, Properties properties, CacheDataDescription metadata)
     {
-        super(namedCache, settings, properties, metadata);
+        super(namedCache, sessionFactoryOptions, properties, metadata);
     }
 
 
@@ -78,11 +80,11 @@ implements CollectionRegion
         switch (accessType)
         {
             case NONSTRICT_READ_WRITE :
-                return new CollectionNonstrictReadWriteCoherenceRegionAccessStrategy(this, getSettings());
+                return new CollectionNonstrictReadWriteCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case READ_ONLY :
-                return new CollectionReadOnlyCoherenceRegionAccessStrategy(this, getSettings());
+                return new CollectionReadOnlyCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case READ_WRITE :
-                return new CollectionReadWriteCoherenceRegionAccessStrategy(this, getSettings());
+                return new CollectionReadWriteCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case TRANSACTIONAL :
                 throw new CacheException(CoherenceRegionAccessStrategy.TRANSACTIONAL_STRATEGY_NOT_SUPPORTED_MESSAGE);
             default :

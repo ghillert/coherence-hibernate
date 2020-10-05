@@ -30,12 +30,13 @@ import com.oracle.coherence.hibernate.cache.access.EntityNonstrictReadWriteCoher
 import com.oracle.coherence.hibernate.cache.access.EntityReadOnlyCoherenceRegionAccessStrategy;
 import com.oracle.coherence.hibernate.cache.access.EntityReadWriteCoherenceRegionAccessStrategy;
 import com.tangosol.net.NamedCache;
+
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.CacheDataDescription;
 import org.hibernate.cache.spi.EntityRegion;
 import org.hibernate.cache.spi.access.AccessType;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
-import org.hibernate.cfg.Settings;
 
 import java.util.Properties;
 
@@ -43,6 +44,7 @@ import java.util.Properties;
  * An CoherenceEntityRegion is a CoherenceTransactionalDataRegion intended to cache Hibernate entities.
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public class CoherenceEntityRegion
 extends CoherenceTransactionalDataRegion
@@ -56,13 +58,13 @@ implements EntityRegion
      * Complete constructor.
      *
      * @param namedCache the NamedCache implementing this CoherenceEntityRegion
-     * @param settings the Hibernate settings object
+     * @param sessionFactoryOptions the Hibernate SessionFactoryOptions
      * @param properties configuration properties for this CoherenceEntityRegion
      * @param metadata the description of the data in this CoherenceEntityRegion
      */
-    public CoherenceEntityRegion(NamedCache namedCache, Settings settings, Properties properties, CacheDataDescription metadata)
+    public CoherenceEntityRegion(NamedCache namedCache, SessionFactoryOptions sessionFactoryOptions, Properties properties, CacheDataDescription metadata)
     {
-        super(namedCache, settings, properties, metadata);
+        super(namedCache, sessionFactoryOptions, properties, metadata);
     }
 
 
@@ -78,11 +80,11 @@ implements EntityRegion
         switch (accessType)
         {
             case NONSTRICT_READ_WRITE :
-                return new EntityNonstrictReadWriteCoherenceRegionAccessStrategy(this, getSettings());
+                return new EntityNonstrictReadWriteCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case READ_ONLY :
-                return new EntityReadOnlyCoherenceRegionAccessStrategy(this, getSettings());
+                return new EntityReadOnlyCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case READ_WRITE :
-                return new EntityReadWriteCoherenceRegionAccessStrategy(this, getSettings());
+                return new EntityReadWriteCoherenceRegionAccessStrategy(this, getSessionFactoryOptions());
             case TRANSACTIONAL :
                 throw new CacheException(CoherenceRegionAccessStrategy.TRANSACTIONAL_STRATEGY_NOT_SUPPORTED_MESSAGE);
             default :

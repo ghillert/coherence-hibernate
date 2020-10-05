@@ -29,6 +29,7 @@ import com.oracle.coherence.hibernate.cache.region.CoherenceRegion;
 import org.hibernate.cache.spi.EntityRegion;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -43,6 +44,7 @@ public class EntityNonstrictReadWriteCoherenceRegionAccessStrategyTest
 extends AbstractCoherenceRegionAccessStrategyTest
 {
 
+    private SessionImplementor sessionImplementor;
 
     // ---- Subclass responsibility
 
@@ -91,7 +93,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         Object value = "testInsert";
         Object version = null;
 
-        boolean cacheWasModified = accessStrategy.insert(key, value, version);
+        boolean cacheWasModified = accessStrategy.insert(sessionImplementor, key, value, version);
         assertFalse("Expect no cache modification from nonstrict read-write access strategy insert", cacheWasModified);
     }
 
@@ -107,7 +109,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         Object value = "testAfterInsert";
         Object version = null;
 
-        boolean cacheWasModified = accessStrategy.afterInsert(key, value, version);
+        boolean cacheWasModified = accessStrategy.afterInsert(sessionImplementor, key, value, version);
         assertFalse("Expect no cache modification from nonstrict read-write access strategy afterInsert", cacheWasModified);
     }
 
@@ -124,7 +126,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         Object currentVersion = null;
         Object previousVersion = null;
 
-        boolean cacheWasModified = accessStrategy.update(key, value, currentVersion, previousVersion);
+        boolean cacheWasModified = accessStrategy.update(sessionImplementor, key, value, currentVersion, previousVersion);
         assertFalse("Expect no cache modification from nonstrict read-write access strategy update", cacheWasModified);
     }
 
@@ -142,7 +144,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         Object previousVersion = null;
         SoftLock softLock = null;
 
-        boolean cacheWasModified = accessStrategy.afterUpdate(key, value, currentVersion, previousVersion, softLock);
+        boolean cacheWasModified = accessStrategy.afterUpdate(sessionImplementor, key, value, currentVersion, previousVersion, softLock);
         assertFalse("Expect no cache modification from nonstrict read-write access strategy afterUpdate", cacheWasModified);
         assertFalse("Expect cache not to contain key after afterUpdate", accessStrategy.getRegion().contains(key));
     }

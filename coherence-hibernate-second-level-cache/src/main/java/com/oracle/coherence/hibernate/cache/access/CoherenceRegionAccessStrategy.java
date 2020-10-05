@@ -30,10 +30,12 @@ import com.oracle.coherence.hibernate.cache.CoherenceRegionFactory;
 import com.oracle.coherence.hibernate.cache.region.CoherenceTransactionalDataRegion;
 import com.tangosol.util.InvocableMap;
 import com.tangosol.util.processor.AbstractProcessor;
+
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.RegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
-import org.hibernate.cfg.Settings;
+import org.hibernate.engine.spi.SessionImplementor;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -44,6 +46,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Strategies vary with respect to transaction isolation enforcement.
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public abstract class CoherenceRegionAccessStrategy<T extends CoherenceTransactionalDataRegion>
 implements RegionAccessStrategy
@@ -73,9 +76,9 @@ implements RegionAccessStrategy
     private T coherenceRegion;
 
     /**
-     * The Hibernate settings object; may contain user-supplied "minimal puts" settings.
+     * The Hibernate SessionFactoryOptions object; may contain user-supplied "minimal puts" settings.
      */
-    private Settings settings;
+    private SessionFactoryOptions sessionFactoryOptions;
 
     /**
      * A sequence number for soft locks acquired by this CoherenceRegionAccessStrategy.
@@ -95,13 +98,13 @@ implements RegionAccessStrategy
      * Complete constructor.
      *
      * @param coherenceRegion the CoherenceRegion for which this is a CoherenceRegionAccessStrategy
-     * @param settings the Hibernate settings object
+     * @param sessionFactoryOptions the Hibernate SessionFactoryOptions
      */
-    public CoherenceRegionAccessStrategy(T coherenceRegion, Settings settings)
+    public CoherenceRegionAccessStrategy(T coherenceRegion, SessionFactoryOptions sessionFactoryOptions)
     {
-        debugf("%s(%s, %s)", getClass().getName(), coherenceRegion, settings);
+        debugf("%s(%s, %s)", getClass().getName(), coherenceRegion, sessionFactoryOptions);
         this.coherenceRegion = coherenceRegion;
-        this.settings = settings;
+        this.sessionFactoryOptions = sessionFactoryOptions;
     }
 
 
@@ -162,7 +165,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public Object get(Object key, long txTimestamp) throws CacheException
+    public Object get(SessionImplementor session, Object key, long txTimestamp) throws CacheException
     {
         debugf("%s.getValue(%s, %s)", this, key, txTimestamp);
         CoherenceRegion.Value cacheValue = getCoherenceRegion().getValue(key);
@@ -173,18 +176,18 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(Object key, Object value, long txTimestamp, Object version)
+    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s)", this, key, value, txTimestamp, version);
-        return putFromLoad(key, value, txTimestamp, version, settings.isMinimalPutsEnabled());
+        return putFromLoad(session, key, value, txTimestamp, version, sessionFactoryOptions.isMinimalPutsEnabled());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
+    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s, %s)", this, key, value, txTimestamp, version, minimalPutOverride);
@@ -197,7 +200,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public SoftLock lockItem(Object key, Object version) throws CacheException
+    public SoftLock lockItem(SessionImplementor session, Object key, Object version) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, version);
         //for the majority of access strategies lockItem is a no-op
@@ -219,7 +222,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public void unlockItem(Object key, SoftLock lock) throws CacheException
+    public void unlockItem(SessionImplementor session, Object key, SoftLock lock) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, lock);
         //for the majority of access strategies unlockItem is a no-op
@@ -239,7 +242,7 @@ implements RegionAccessStrategy
      * {@inheritDoc}
      */
     @Override
-    public void remove(Object key) throws CacheException
+    public void remove(SessionImplementor session, Object key) throws CacheException
     {
         debugf("%s.remove(%s)", this, key);
         evict(key);

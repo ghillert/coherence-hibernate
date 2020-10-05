@@ -28,6 +28,7 @@ package com.oracle.coherence.hibernate.cache.access;
 import com.oracle.coherence.hibernate.cache.region.CoherenceRegion;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.SoftLock;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -43,6 +44,7 @@ public class ReadWriteCoherenceRegionAccessStrategyTest
 extends AbstractCoherenceRegionAccessStrategyTest
 {
 
+    private SessionImplementor sessionImplementor;
 
     // ---- Subclass responsibility
 
@@ -78,7 +80,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         EntityRegionAccessStrategy accessStrategy = getEntityRegionAccessStrategy();
         Object key = "testGetEntryAbsent";
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        Object valueGot = getCoherenceRegionAccessStrategy().get(key, txTimestamp);
+        Object valueGot = getCoherenceRegionAccessStrategy().get(sessionImplementor, key, txTimestamp);
         assertNull("Expect null getting from empty cache", valueGot);
     }
 
@@ -95,7 +97,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         putFromLoad(key, valuePut, false);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        Object valueGot = getCoherenceRegionAccessStrategy().get(key, txTimestamp);
+        Object valueGot = getCoherenceRegionAccessStrategy().get(sessionImplementor, key, txTimestamp);
         assertNotNull("Expect non-null value", valueGot);
         assertEquals("Expect got same value put", valueGot, valuePut);
     }
@@ -112,10 +114,10 @@ extends AbstractCoherenceRegionAccessStrategyTest
         Object valuePut = "testGetEntryPresentAndLocked";
         Object version = null;
         putFromLoad(key, valuePut, false);
-        accessStrategy.lockItem(key, version);
+        accessStrategy.lockItem(sessionImplementor, key, version);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        Object valueGot = getCoherenceRegionAccessStrategy().get(key, txTimestamp);
+        Object valueGot = getCoherenceRegionAccessStrategy().get(sessionImplementor, key, txTimestamp);
         assertNull("Expect null getting locked value", valueGot);
     }
 
@@ -133,7 +135,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         assertTrue("Expect successful putFromLoad when entry absent", objectWasCached);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        assertEquals("Expect got same object put", valuePut, accessStrategy.get(key, txTimestamp));
+        assertEquals("Expect got same object put", valuePut, accessStrategy.get(sessionImplementor, key, txTimestamp));
     }
 
     /**
@@ -168,7 +170,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         assertTrue("Expect successful putFromLoad when entry present and not minimal puts", objectWasCached);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        assertEquals("Expect got same object put", valuePut, accessStrategy.get(key, txTimestamp));
+        assertEquals("Expect got same object put", valuePut, accessStrategy.get(sessionImplementor, key, txTimestamp));
     }
 
     /**
@@ -185,14 +187,14 @@ extends AbstractCoherenceRegionAccessStrategyTest
         putFromLoad(key, valuePut, false);
 
         Object version = null;
-        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(key, version);
-        accessStrategy.unlockItem(key, softLock);
+        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(sessionImplementor, key, version);
+        accessStrategy.unlockItem(sessionImplementor, key, softLock);
 
         boolean objectWasCached = putFromLoad(key, valuePut, false);
         assertTrue("Expect successful putFromLoad when entry present and not minimal puts and locks released", objectWasCached);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        assertEquals("Expect got same object put", valuePut, accessStrategy.get(key, txTimestamp));
+        assertEquals("Expect got same object put", valuePut, accessStrategy.get(sessionImplementor, key, txTimestamp));
     }
 
     /**
@@ -209,7 +211,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         putFromLoad(key, valuePut, false);
 
         Object version = null;
-        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(key, version);
+        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(sessionImplementor, key, version);
         long expirationTime = softLock.getExpirationTime();
 
         boolean objectWasCached = putFromLoad(key, valuePut, false, expirationTime - 1000L);
@@ -230,14 +232,14 @@ extends AbstractCoherenceRegionAccessStrategyTest
         putFromLoad(key, valuePut, false);
 
         Object version = null;
-        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(key, version);
+        CoherenceRegion.Value.SoftLock softLock = (CoherenceRegion.Value.SoftLock) accessStrategy.lockItem(sessionImplementor, key, version);
         long expirationTime = softLock.getExpirationTime();
 
         boolean objectWasCached = putFromLoad(key, valuePut, false, expirationTime + 1000L);
         assertTrue("Expect successful putFromLoad when entry present, not minimal puts, locks expired", objectWasCached);
 
         long txTimestamp = accessStrategy.getRegion().nextTimestamp();
-        assertEquals("Expect got same object put", valuePut, accessStrategy.get(key, txTimestamp));
+        assertEquals("Expect got same object put", valuePut, accessStrategy.get(sessionImplementor, key, txTimestamp));
     }
 
     /**
@@ -250,7 +252,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
 
         Object key = "testLockItem";
         Object version = null;
-        strategy.lockItem(key, version);
+        strategy.lockItem(sessionImplementor, key, version);
 
         assertTrue("Expect entry to be present after being locked", strategy.getRegion().contains(key));
         assertTrue("Expect value to be locked", strategy.getCoherenceRegion().getValue(key).isSoftLocked());
@@ -266,9 +268,9 @@ extends AbstractCoherenceRegionAccessStrategyTest
 
         Object key = "testUnlockItem";
         Object version = null;
-        SoftLock softLock = strategy.lockItem(key, version);
+        SoftLock softLock = strategy.lockItem(sessionImplementor, key, version);
 
-        strategy.unlockItem(key, softLock);
+        strategy.unlockItem(sessionImplementor, key, softLock);
         assertTrue("Expect entry to be present", strategy.getRegion().contains(key));
         assertFalse("Expect value to be not locked", strategy.getCoherenceRegion().getValue(key).isSoftLocked());
     }
@@ -283,10 +285,10 @@ extends AbstractCoherenceRegionAccessStrategyTest
 
         Object key = "testUnlockItem";
         Object version = null;
-        SoftLock softLock = strategy.lockItem(key, version);
-        strategy.lockItem(key, version);
+        SoftLock softLock = strategy.lockItem(sessionImplementor, key, version);
+        strategy.lockItem(sessionImplementor, key, version);
 
-        strategy.unlockItem(key, softLock);
+        strategy.unlockItem(sessionImplementor, key, softLock);
         assertTrue("Expect entry to be present", strategy.getRegion().contains(key));
         assertTrue("Expect value to still be locked", strategy.getCoherenceRegion().getValue(key).isSoftLocked());
     }
@@ -323,7 +325,7 @@ extends AbstractCoherenceRegionAccessStrategyTest
         //note we don't test the four-argument variant of putFromLoad() because it depends on the Hibernate Settings object
         //which is hard to instantiate or mock.  But the four-argument variant just funnels to the five-argument one anyway
         Object version = null;
-        return getCoherenceRegionAccessStrategy().putFromLoad(key, value, txTimestamp, version, minimalPutsInEffect);
+        return getCoherenceRegionAccessStrategy().putFromLoad(sessionImplementor, key, value, txTimestamp, version, minimalPutsInEffect);
     }
 
 

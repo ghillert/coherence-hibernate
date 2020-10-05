@@ -25,7 +25,7 @@
 
 package com.oracle.coherence.hibernate.cache;
 
-import org.hibernate.cfg.Settings;
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.junit.After;
 import org.junit.Before;
 
@@ -54,9 +54,9 @@ public abstract class AbstractCoherenceRegionFactoryTest
     private Properties properties;
 
     /**
-     * The Hibernate Settings used to start the CoherenceRegionFactory.
+     * The Hibernate SessionFactoryOptions used to start the CoherenceRegionFactory.
      */
-    private Settings settings;
+    private SessionFactoryOptions sessionFactoryOptions;
 
 
     // ---- Accessing
@@ -86,11 +86,11 @@ public abstract class AbstractCoherenceRegionFactoryTest
     /**
      * Returns the Hibernate Settings used to start the CoherenceRegionFactory.
      *
-     * @return the Settings used to start the CoherenceRegionFactory
+     * @return the SessionFactoryOptions used to start the CoherenceRegionFactory
      */
-    protected Settings getSettings()
+    protected SessionFactoryOptions getSessionFactoryOptions()
     {
-        //Settings is difficult to instantiate, depending on a lot of Hibernate configuration infrastructure.
+        //FIXME Settings is difficult to instantiate, depending on a lot of Hibernate configuration infrastructure.
         //It's also a final class and therefore difficult to mock.  Use null as long as we can get away with it.
         return null;
     }
@@ -106,7 +106,7 @@ public abstract class AbstractCoherenceRegionFactoryTest
     {
         //use a started CoherenceRegionFactory in the test, as a convenience
         //to ensure the cluster is joined and the cache factory is configured etc.
-        getCoherenceRegionFactory().start(getSettings(), getProperties());
+        getCoherenceRegionFactory().start(getSessionFactoryOptions(), getProperties());
     }
 
     /**

@@ -29,9 +29,11 @@ import com.oracle.coherence.hibernate.cache.region.CoherenceRegion;
 import com.oracle.coherence.hibernate.cache.region.CoherenceTransactionalDataRegion;
 import com.tangosol.util.InvocableMap;
 import com.tangosol.util.processor.AbstractProcessor;
+
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.SoftLock;
-import org.hibernate.cfg.Settings;
+import org.hibernate.engine.spi.SessionImplementor;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -41,6 +43,7 @@ import java.util.Comparator;
  * implementing the "read-write" cache concurrency strategy as defined by Hibernate.
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public class ReadWriteCoherenceRegionAccessStrategy<T extends CoherenceTransactionalDataRegion>
 extends CoherenceRegionAccessStrategy<T>
@@ -53,11 +56,11 @@ extends CoherenceRegionAccessStrategy<T>
      * Complete constructor.
      *
      * @param coherenceRegion the CoherenceRegion for this ReadWriteCoherenceRegionAccessStrategy
-     * @param settings the Hibernate settings object
+     * @param sessionFactoryOptions the Hibernate SessionFactoryOptions object
      */
-    public ReadWriteCoherenceRegionAccessStrategy(T coherenceRegion, Settings settings)
+    public ReadWriteCoherenceRegionAccessStrategy(T coherenceRegion, SessionFactoryOptions sessionFactoryOptions)
     {
-        super(coherenceRegion, settings);
+        super(coherenceRegion, sessionFactoryOptions);
     }
 
 
@@ -67,7 +70,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public Object get(Object key, long txTimestamp) throws CacheException
+    public Object get(SessionImplementor session, Object key, long txTimestamp) throws CacheException
     {
         debugf("%s.get(%s, %s)", this, key, txTimestamp);
         return getCoherenceRegion().invoke(key, new GetProcessor());
@@ -77,7 +80,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public org.hibernate.cache.spi.access.SoftLock lockItem(Object key, Object version) throws CacheException
+    public org.hibernate.cache.spi.access.SoftLock lockItem(SessionImplementor session, Object key, Object version) throws CacheException
     {
         debugf("%s.lockItem(%s, %s)", this, key, version);
         CoherenceRegion.Value valueIfAbsent = newCacheValue(null, version);
@@ -91,7 +94,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public boolean putFromLoad(Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
+    public boolean putFromLoad(SessionImplementor session, Object key, Object value, long txTimestamp, Object version, boolean minimalPutOverride)
     throws CacheException
     {
         debugf("%s.putFromLoad(%s, %s, %s, %s, %s)", this, key, value, txTimestamp, version, minimalPutOverride);
@@ -105,7 +108,7 @@ extends CoherenceRegionAccessStrategy<T>
      * {@inheritDoc}
      */
     @Override
-    public void unlockItem(Object key, org.hibernate.cache.spi.access.SoftLock lock) throws CacheException
+    public void unlockItem(SessionImplementor session, Object key, org.hibernate.cache.spi.access.SoftLock lock) throws CacheException
     {
         debugf("%s.unlockItem(%s, %s)", this, key, lock);
         SoftUnlockItemProcessor processor = new SoftUnlockItemProcessor(lock, getCoherenceRegion().nextTimestamp());

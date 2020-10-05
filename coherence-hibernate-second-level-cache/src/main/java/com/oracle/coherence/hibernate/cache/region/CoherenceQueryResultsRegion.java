@@ -34,6 +34,7 @@ import java.util.Properties;
  * A CoherenceQueryResultsRegion is a CoherenceGeneralDataRegion intended to cache Hibernate query results.
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public class CoherenceQueryResultsRegion
 extends CoherenceGeneralDataRegion

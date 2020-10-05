@@ -26,15 +26,20 @@
 package com.oracle.coherence.hibernate.cache.access;
 
 import com.oracle.coherence.hibernate.cache.region.CoherenceCollectionRegion;
+
+import org.hibernate.boot.spi.SessionFactoryOptions;
+import org.hibernate.cache.internal.DefaultCacheKeysFactory;
 import org.hibernate.cache.spi.CollectionRegion;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
-import org.hibernate.cfg.Settings;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.persister.collection.CollectionPersister;
 
 /**
  * A CollectionReadOnlyCoherenceRegionAccessStrategy is CoherenceRegionAccessStrategy
  * implementing Hibernate's read-only cache concurrency strategy for collection regions.
  *
  * @author Randy Stafford
+ * @author Gunnar Hillert
  */
 public class CollectionReadOnlyCoherenceRegionAccessStrategy
 extends CoherenceRegionAccessStrategy<CoherenceCollectionRegion>
@@ -48,11 +53,11 @@ implements CollectionRegionAccessStrategy
      * Complete constructor.
      *
      * @param coherenceCollectionRegion the CoherenceCollectionRegion for this CollectionReadOnlyCoherenceRegionAccessStrategy
-     * @param settings the Hibernate settings object
+     * @param sessionFactoryOptions the Hibernate SessionFactoryOptions object
      */
-    public CollectionReadOnlyCoherenceRegionAccessStrategy(CoherenceCollectionRegion coherenceCollectionRegion, Settings settings)
+    public CollectionReadOnlyCoherenceRegionAccessStrategy(CoherenceCollectionRegion coherenceCollectionRegion, SessionFactoryOptions sessionFactoryOptions)
     {
-        super(coherenceCollectionRegion, settings);
+        super(coherenceCollectionRegion, sessionFactoryOptions);
     }
 
 
@@ -68,5 +73,16 @@ implements CollectionRegionAccessStrategy
         return getCoherenceRegion();
     }
 
+    @Override
+    public Object generateCacheKey(Object id, CollectionPersister persister, SessionFactoryImplementor sessionFactoryImplementor, String tenantIdentifier)
+    {
+        return DefaultCacheKeysFactory.staticCreateCollectionKey( id, persister, sessionFactoryImplementor, tenantIdentifier );
+    }
+
+    @Override
+    public Object getCacheKeyId(Object cacheKey)
+    {
+        return DefaultCacheKeysFactory.staticGetCollectionId(cacheKey);
+    }
 
 }
